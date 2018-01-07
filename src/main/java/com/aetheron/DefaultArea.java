@@ -22,6 +22,7 @@ public class DefaultArea implements IArea, Environment {
     public void add(Room room) {
         rooms.add(room);
     }
+
     @Override
     public String getDescription() {
         return "A nondescript area";

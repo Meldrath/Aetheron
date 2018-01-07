@@ -34,6 +34,40 @@ public class Processor implements IProcessor {
                 body.items.forEach(thing -> body.sendOutput(thing.getName() + "\n"));
             }
         }
+        else if (input.startsWith("get") || input.startsWith("take")) {
+            final String[] words = input.split("\\s+", 2);
+            if (words.length == 1){
+                body.sendOutput(words[0] + " what?\n");
+            }
+            else {
+                final Optional<Item> opt = room.getItem(words[1]);
+                opt.ifPresent(item -> {
+                    room.remove(item);
+                    body.add(item);
+                    body.sendOutput("You got the " + item.getName() + ".\n");
+                });
+                if (!opt.isPresent()) {
+                    body.sendOutput("You don't see a " + words[0] + " here.\n");
+                }
+            }
+        }
+        else if (input.startsWith("drop") || input.startsWith("discard")) {
+            final String[] words = input.split("\\s+", 2);
+            if (words.length == 1){
+                body.sendOutput(words[0] + " what?\n");
+            }
+            else {
+                final Optional<Item> opt = body.getItem(words[1]);
+                opt.ifPresent(item -> {
+                    body.remove(item);
+                    room.add(item);
+                    body.sendOutput("You dropped the " + item.getName() + ".\n");
+                });
+                if (!opt.isPresent()) {
+                    body.sendOutput("You don't have a " + words[0] + ".\n");
+                }
+            }
+        }
         else if (input.startsWith("create")) {
             final String[] words = input.split("\\s+");
             if (words.length < 2) {
@@ -51,6 +85,18 @@ public class Processor implements IProcessor {
                 }
                 else {
                     body.sendOutput("Syntax: create room <direction> <back direction>\n");
+                }
+            }
+            else if (words[1].equals("object")) {
+                final String[] args = input.substring("create object ".length()).trim().split("' '");
+                if (args.length == 2 && args[0].length() > 1 && args[0].startsWith("'") && args[1].length() > 1 && args[1].endsWith("'")) {
+                    final String name = args[0].substring(1);
+                    final String description = args[1].substring(1);
+                    room.add(new Item(name, description));
+                    body.sendOutput("Created object.\n");
+                }
+                else {
+                    body.sendOutput("Syntax: create object '<name>' '<description>'\n");
                 }
             }
             else {

@@ -19,7 +19,7 @@ public class World implements Environment {
     public void add(Conn conn) {
         Body b = new Body(conn);
         newBodies.add(b);
-        b.sendOutput("What is your name?");
+        b.sendOutput("What is your name?\n");
     }
 
     public void add(Body b) {

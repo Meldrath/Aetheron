@@ -1,34 +1,41 @@
 package com.aetheron;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class DefaultArea implements IArea, Environment {
 
-    private final Map<Body, Room> playingBodies = new HashMap<>();
     private final IProcessor processor = new Processor();
     private final Room startRoom = new Room();
+    private final Set<Room> rooms = new HashSet<>(Arrays.asList(startRoom));
 
     @Override
     public void doTick() {
-        playingBodies.forEach((body, room) -> {
+        rooms.forEach(room -> room.getLocalBodies().forEach(body -> {
             final String input = body.pollInput();
             if (input != null) {
                 processor.process(input, body, room, this);
             }
-        });
+        }));
     }
 
     @Override
-    public Collection<Body> getLocalBodies(Body body) {
-        return playingBodies.keySet();
+    public void add(Room room) {
+        rooms.add(room);
+    }
+    @Override
+    public String getDescription() {
+        return "A nondescript area";
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Collection<Body> getLocalBodies() {
+        return Collections.EMPTY_SET;
     }
 
     @Override
     public void add(Body body) {
-        playingBodies.put(body, startRoom);
         startRoom.add(body);
-        body.sendOutput("Welcome.");
+        body.sendOutput("Welcome.\n");
     }
 }

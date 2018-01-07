@@ -12,7 +12,7 @@ public class LoginProcessor implements IProcessor {
         this.world = world;
     }
 
-    public void process(String input, Body body, Environment env, Environment outerEnv) {
+    public void process(String input, Body body, Room room, IArea area) {
         final String name = body.stringProps.get("name");
         final String password = body.stringProps.get("password");
         if (name == null || name.length() < 3) {

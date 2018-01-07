@@ -19,4 +19,12 @@ public class Item implements IThing {
     public String getDescription() {
         return description;
     }
+
+    @Override
+    public String toString() {
+        return "Item{" +
+                "description='" + description + '\'' +
+                ", name='" + name + '\'' +
+                '}';
+    }
 }

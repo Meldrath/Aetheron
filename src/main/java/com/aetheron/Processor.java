@@ -44,10 +44,10 @@ public class Processor implements IProcessor {
                 opt.ifPresent(item -> {
                     room.remove(item);
                     body.add(item);
-                    body.sendOutput("You got the " + item.getName() + ".\n");
+                    body.sendOutput("You get the " + item.getName() + ".\n");
                 });
                 if (!opt.isPresent()) {
-                    body.sendOutput("You don't see a " + words[0] + " here.\n");
+                    body.sendOutput("You don't see a " + words[1] + " here.\n");
                 }
             }
         }
@@ -61,10 +61,58 @@ public class Processor implements IProcessor {
                 opt.ifPresent(item -> {
                     body.remove(item);
                     room.add(item);
-                    body.sendOutput("You dropped the " + item.getName() + ".\n");
+                    body.sendOutput("You drop the " + item.getName() + ".\n");
                 });
                 if (!opt.isPresent()) {
-                    body.sendOutput("You don't have a " + words[0] + ".\n");
+                    body.sendOutput("You don't have a " + words[1] + ".\n");
+                }
+            }
+        }
+        else if (input.startsWith("remove")) {
+            final String[] words = input.split("\\s+", 2);
+            if (words.length == 1){
+                body.sendOutput(words[0] + " what?\n");
+            }
+            else {
+                final Optional<Equipment> opt = body.getEquipment(words[1]);
+                opt.ifPresent(eq -> {
+                    body.remove(eq);
+                    body.add(eq);
+                    body.sendOutput("You remove the " + eq.getName() + ".\n");
+                });
+                if (!opt.isPresent()) {
+                    body.sendOutput("You aren't wearing a " + words[1] + ".\n");
+                }
+            }
+        }
+        else if (input.startsWith("wear") || input.startsWith("equip")) {
+            final String[] words = input.split("\\s+", 2);
+            if (words.length == 1){
+                if ("equipment".startsWith(input)) {
+                    final Map<String, Equipment> equip = body.getEquipment();
+                    if (equip.isEmpty()) {
+                        body.sendOutput("You are wearing nothing.\n");
+                    }
+                    else {
+                        body.sendOutput("You are wearing:\n");
+                        equip.entrySet().stream().sorted().forEach(entry -> {
+                            body.sendOutput(entry.getKey() + ": " + entry.getValue().getName() + "\n");
+                        });
+                    }
+                }
+                else {
+                    body.sendOutput(words[0] + " what?\n");
+                }
+            }
+            else {
+                final Optional<Equipment> opt = body.getEquipmentItem(words[1]);
+                opt.ifPresent(eq -> {
+                    body.remove((Item) eq);
+                    body.add(eq.getLocation(), eq);
+                    body.sendOutput("You equip the " + eq.getName() + ".\n");
+                });
+                if (!opt.isPresent()) {
+                    body.sendOutput("You don't have a " + words[1] + ".\n");
                 }
             }
         }
@@ -91,12 +139,25 @@ public class Processor implements IProcessor {
                 final String[] args = input.substring("create object ".length()).trim().split("' '");
                 if (args.length == 2 && args[0].length() > 1 && args[0].startsWith("'") && args[1].length() > 1 && args[1].endsWith("'")) {
                     final String name = args[0].substring(1);
-                    final String description = args[1].substring(1);
+                    final String description = args[1].substring(0, args[1].length() - 1);
                     room.add(new Item(name, description));
                     body.sendOutput("Created object.\n");
                 }
                 else {
                     body.sendOutput("Syntax: create object '<name>' '<description>'\n");
+                }
+            }
+            else if (words[1].equals("equipment")) {
+                final String[] args = input.substring("create equipment".length()).trim().split("' '");
+                if (args.length == 3 && args[0].length() > 1 && args[0].startsWith("'") && args[1].length() > 1 && args[2].length() > 1 && args[2].endsWith("'")) {
+                    final String name = args[0].substring(1);
+                    final String description = args[1];
+                    final String location = args[2].substring(0, args[2].length() - 1);
+                    room.add(new Equipment(name, description, location));
+                    body.sendOutput("Created object.\n");
+                }
+                else {
+                    body.sendOutput("Syntax: create equipment '<name>' '<description>' '<body location>'\n");
                 }
             }
             else {
